@@ -10,6 +10,9 @@ A real-time chat application built with React and Firebase, featuring user authe
 - **Modern UI**: Built with Material-UI (MUI) for a clean and responsive interface
 - **User Presence**: See online status of other users
 - **Message History**: View chat history with timestamps
+- **Message Deletion**: Delete your own messages within 1 minute of sending
+- **Account Management**: Delete your account and all associated data
+- **Enhanced UI**: Hover over avatars to see usernames, custom confirmation dialogs
 
 ## Tech Stack
 

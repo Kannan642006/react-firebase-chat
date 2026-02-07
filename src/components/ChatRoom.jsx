@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { auth, db } from '../firebase';
 import { collection, query, orderBy, limit, addDoc, serverTimestamp } from 'firebase/firestore';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { useCollection } from 'react-firebase-hooks/firestore';
 import ChatMessage from './ChatMessage';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -22,7 +22,8 @@ function ChatRoom() {
     // Query for the latest 'limitCount' messages (descending order)
     const q = query(messagesRef, orderBy('createdAt', 'desc'), limit(limitCount));
 
-    const [messages, loading] = useCollectionData(q, { idField: 'id' });
+    const [snapshot, loading] = useCollection(q);
+    const messages = snapshot?.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     const [formValue, setFormValue] = useState('');
 
     // Reverse messages to show them in chronological order (Oldest -> Newest)

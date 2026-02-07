@@ -1,8 +1,10 @@
 import React from 'react';
 import './App.css';
 
-import { auth } from './firebase';
+import { auth, db } from './firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { deleteUser } from 'firebase/auth';
+import { collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 
 import SignIn from './components/SignIn';
 import ChatRoom from './components/ChatRoom';
@@ -30,6 +32,34 @@ const darkTheme = createTheme({
 function App() {
   const [user] = useAuthState(auth);
 
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete your account? This will permanently delete your account and all your messages."
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const messagesRef = collection(db, "messages");
+      const q = query(messagesRef, where("uid", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+
+      const deletePromises = querySnapshot.docs.map((doc) =>
+        deleteDoc(doc.ref)
+      );
+      await Promise.all(deletePromises);
+
+      await deleteUser(user);
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      if (error.code === 'auth/requires-recent-login') {
+        alert("For security reasons, you need to sign in again to delete your account. You will be signed out now.");
+        await auth.signOut();
+      } else {
+        alert("Failed to delete account: " + error.message);
+      }
+    }
+  };
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -39,7 +69,16 @@ function App() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               React Firebase Chat
             </Typography>
-            {user && <Button color="inherit" onClick={() => auth.signOut()}>Sign Out</Button>}
+            {user && (
+              <>
+                <Button color="error" onClick={handleDeleteAccount} sx={{ mr: 1 }}>
+                  Delete Account
+                </Button>
+                <Button color="inherit" onClick={() => auth.signOut()}>
+                  Sign Out
+                </Button>
+              </>
+            )}
           </Toolbar>
         </AppBar>
 
